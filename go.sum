@@ -1,0 +1,8 @@
+github.com/bgreenblatt/sqlstring v0.1.1 h1:0bwlzU867lJyFH7KBZmQ7MDqZpbM8gER18nc6iHofqk=
+github.com/bgreenblatt/sqlstring v0.1.1/go.mod h1:Ksi22kEFIkuQiGwo3AvBRIKFjrOdKRUI4mX2+yOszSk=
+github.com/bgreenblatt/sqlstring v0.1.2 h1:eDblA6wOlSAfzVaMdQ1vliOrgQM+NQws8B5OrUXFWuc=
+github.com/bgreenblatt/sqlstring v0.1.2/go.mod h1:Ksi22kEFIkuQiGwo3AvBRIKFjrOdKRUI4mX2+yOszSk=
+github.com/bgreenblatt/sqlstring v0.1.3-0.20221222192751-306577541c44 h1:QmaPRova5aqOlpMRuM4Rf3BPSdtrykJSOS1PSS+KXoE=
+github.com/bgreenblatt/sqlstring v0.1.3-0.20221222192751-306577541c44/go.mod h1:Ksi22kEFIkuQiGwo3AvBRIKFjrOdKRUI4mX2+yOszSk=
+github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwpU1Y=
+github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=

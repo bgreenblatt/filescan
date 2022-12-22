@@ -1,0 +1,6 @@
+# github.com/bgreenblatt/sqlstring v0.1.3-0.20221222192751-306577541c44
+## explicit; go 1.19
+github.com/bgreenblatt/sqlstring
+# github.com/mattn/go-sqlite3 v1.14.16
+## explicit; go 1.16
+github.com/mattn/go-sqlite3
