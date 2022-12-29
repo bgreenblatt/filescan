@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
+	"text/tabwriter"
 	"time"
 
 	"github.com/bgreenblatt/sqlstring"
@@ -19,6 +21,7 @@ import (
 var rootPath = flag.String("path", "", "root path name")
 var dbName = flag.String("dbName", "", "database name")
 var makeDB = flag.Bool("makedb", false, "initiallize the db")
+var report = flag.Bool("report", false, "run usage report")
 
 var dirid, fileid int
 
@@ -85,10 +88,15 @@ func insertFileRecord(parentPath string, i os.FileInfo, newFileid, parentDirid i
 	stmt.AddColumnValue("fileid", strconv.Itoa(newFileid), true)
 	stmt.AddColumnValue("filename", fileName, true)
 	fullFile := filepath.Join(parentPath, fileName)
+	stat := i.Sys().(*syscall.Stat_t)
+	uid := stat.Uid
+	gid := stat.Gid
 	stmt.AddColumnValue("fullfilename", fullFile, true)
 	stmt.AddColumnValue("parentdirid", strconv.Itoa(parentDirid), true)
 	stmt.AddColumnValue("filesize", strconv.FormatInt(i.Size(), 10), true)
 	stmt.AddColumnValue("filemode", strconv.Itoa(int(i.Mode())), true)
+	stmt.AddColumnValue("fileuid", strconv.Itoa(int(uid)), true)
+	stmt.AddColumnValue("filegid", strconv.Itoa(int(gid)), true)
 	mtime := int(i.ModTime().Unix())
 	stmt.AddColumnValue("filemtime", strconv.Itoa(mtime), true)
 	stmt.AddConflictOption(sqlstring.Replace)
@@ -118,6 +126,8 @@ func createDB(dbName string) {
 	fileStmt.AddColumn("filesize", "INTEGER", false, nil)
 	fileStmt.AddColumn("filemode", "INTEGER", false, nil)
 	fileStmt.AddColumn("filemtime", "TIMESTAMP", false, nil)
+	fileStmt.AddColumn("fileuid", "INTEGER", false, nil)
+	fileStmt.AddColumn("filegid", "INTEGER", false, nil)
 	fileStmt.AddForeignKeyConstraint(srcColumns, tgtColumns, "dirs")
 	fmt.Printf("creating db %s\n", dbName)
 	fmt.Printf("files table schema is:\n\t%s\n\t%s\n", dirStmt.String(), fileStmt.String())
@@ -138,6 +148,166 @@ func createDB(dbName string) {
 	}
 }
 
+func runFileCountReport(db *sql.DB) error {
+	var stmt sqlstring.SQLStringSelect
+	stmt.AddColumn("d.fulldirname", false)
+	stmt.AddColumn("count(f.fileid) as count", false)
+	stmt.AddColumn("sum(f.filesize)", false)
+	stmt.AddTable("files as f", false)
+	stmt.AddTable("dirs as d", false)
+	stmt.AddWhere("d.dirid = f.parentdirid", false)
+	stmt.AddOrderBy("count", sqlstring.Descending)
+	stmt.AddGroupBy("f.parentdirid", false)
+	stmt.AddLimit(10, 0, false)
+
+	rows, err := db.Query(stmt.String())
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+	fmt.Fprintf(w, "\nFile Count Report\n")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "Dirname", "Count of Files", "Sum of File Sizes")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	for rows.Next() {
+		var dirname string
+		var sum, count int
+		err = rows.Scan(&dirname, &count, &sum)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+	}
+	fmt.Fprintf(w, "\n")
+	w.Flush()
+	return nil
+}
+
+func runFileSizeReport(db *sql.DB) error {
+	var stmt sqlstring.SQLStringSelect
+	stmt.AddColumn("d.fulldirname", false)
+	stmt.AddColumn("count(f.fileid)", false)
+	stmt.AddColumn("sum(f.filesize)", false)
+	stmt.AddTable("files as f", false)
+	stmt.AddTable("dirs as d", false)
+	stmt.AddWhere("d.dirid = f.parentdirid", false)
+	stmt.AddOrderBy("filesize", sqlstring.Descending)
+	stmt.AddGroupBy("f.parentdirid", false)
+	stmt.AddLimit(10, 0, false)
+
+	rows, err := db.Query(stmt.String())
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+	fmt.Fprintf(w, "\nFile Size Report\n")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "Dirname", "Count of Files", "Sum of File Sizes")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	for rows.Next() {
+		var dirname string
+		var sum, count int
+		err = rows.Scan(&dirname, &count, &sum)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+	}
+	fmt.Fprintf(w, "\n")
+	w.Flush()
+	return nil
+}
+
+func runFileUidReport(db *sql.DB) error {
+	var stmt sqlstring.SQLStringSelect
+	stmt.AddColumn("f.fileuid", false)
+	stmt.AddColumn("count(f.fileid) as count", false)
+	stmt.AddColumn("sum(f.filesize)", false)
+	stmt.AddTable("files as f", false)
+	stmt.AddTable("dirs as d", false)
+	stmt.AddWhere("d.dirid = f.parentdirid", false)
+	stmt.AddOrderBy("count", sqlstring.Descending)
+	stmt.AddGroupBy("f.fileuid", false)
+	stmt.AddLimit(10, 0, false)
+
+	rows, err := db.Query(stmt.String())
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+	fmt.Fprintf(w, "\nFile Count Report\n")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "UID", "Count of Files", "Sum of File Sizes")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	for rows.Next() {
+		var dirname string
+		var sum, count int
+		err = rows.Scan(&dirname, &count, &sum)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+	}
+	fmt.Fprintf(w, "\n")
+	w.Flush()
+	return nil
+}
+
+func runFileGidReport(db *sql.DB) error {
+	var stmt sqlstring.SQLStringSelect
+	stmt.AddColumn("f.filegid", false)
+	stmt.AddColumn("count(f.fileid) as count", false)
+	stmt.AddColumn("sum(f.filesize)", false)
+	stmt.AddTable("files as f", false)
+	stmt.AddTable("dirs as d", false)
+	stmt.AddWhere("d.dirid = f.parentdirid", false)
+	stmt.AddOrderBy("count", sqlstring.Descending)
+	stmt.AddGroupBy("f.fileuid", false)
+	stmt.AddLimit(10, 0, false)
+
+	rows, err := db.Query(stmt.String())
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+	fmt.Fprintf(w, "\nFile Count Report\n")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "UID", "Count of Files", "Sum of File Sizes")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	for rows.Next() {
+		var dirname string
+		var sum, count int
+		err = rows.Scan(&dirname, &count, &sum)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+	}
+	fmt.Fprintf(w, "\n")
+	w.Flush()
+	return nil
+}
+
+func runReports(db *sql.DB) error {
+	if err := runFileCountReport(db); err != nil {
+		return err
+	}
+	if err := runFileSizeReport(db); err != nil {
+		return err
+	}
+	if err := runFileUidReport(db); err != nil {
+		return err
+	}
+	if err := runFileGidReport(db); err != nil {
+		return err
+	}
+	return nil
+}
+
 func main() {
 	start := time.Now()
 	flag.Parse()
@@ -149,16 +319,25 @@ func main() {
 		createDB(*dbName)
 		os.Exit(0)
 	}
-	if strings.Compare(*rootPath, "") == 0 {
-		fmt.Printf("Must supply root path name to traverse --path\n")
-		os.Exit(3)
-	}
+
 	db, err := sql.Open("sqlite3", *dbName)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer db.Close()
+
+	if *report {
+		if err := runReports(db); err != nil {
+			fmt.Printf("error %v running report\n", err)
+			os.Exit(3)
+		}
+		os.Exit(0)
+	}
+	if strings.Compare(*rootPath, "") == 0 {
+		fmt.Printf("Must supply root path name to traverse --path\n")
+		os.Exit(3)
+	}
+
 	beginStmt := sqlstring.NewSQLStringTransaction(sqlstring.Begin)
 	_, err = db.Exec(beginStmt.String())
 	if err != nil {

@@ -66,6 +66,7 @@ type SQLStringSelect struct {
 	where         string
 	groupby       []string
 	orderby       []string
+	roworder      []SelectRowOrder
 	allOrDistinct SelectAllDistinctOption
 	limit         uint
 	offset        uint
@@ -316,8 +317,27 @@ func (t *SQLStringSelect) AddGroupBy(gb string, addComma bool) {
 	t.groupby = append(t.groupby, gb)
 }
 
-func (t *SQLStringSelect) AddOrderBy(ob string, addComma bool) {
+type SelectRowOrder int
+
+const (
+	Ascending = iota
+	Descending
+)
+
+func (s SelectRowOrder) String() string {
+	switch s {
+	case Ascending:
+		return "ASC"
+	case Descending:
+		return "DESC"
+	default:
+		return ""
+	}
+}
+
+func (t *SQLStringSelect) AddOrderBy(ob string, roworder SelectRowOrder) {
 	t.orderby = append(t.orderby, ob)
+	t.roworder = append(t.roworder, roworder)
 }
 
 func (t *SQLStringSelect) AddLimit(limit, offset uint, addComma bool) {
@@ -346,9 +366,14 @@ func (t *SQLStringSelect) String() string {
 		t.sqlString.AddString(gbs, false)
 	}
 	if len(t.orderby) > 0 {
-		obs := strings.Join(t.orderby, ", ")
+		var obs []string
+		for i := range t.orderby {
+			ob := t.orderby[i] + " " + t.roworder[i].String()
+			obs = append(obs, ob)
+		}
+		orderbys := strings.Join(obs, ", ")
 		t.sqlString.AddString(" ORDER BY ", false)
-		t.sqlString.AddString(obs, false)
+		t.sqlString.AddString(orderbys, false)
 	}
 	if t.limit > 0 {
 		t.sqlString.AddString(" LIMIT ", false)
