@@ -30,3 +30,10 @@ Examples:
 ./filescan --dbName="files.db" --path="/home/ubuntu"
 ./filescan --dbName="files.db" --report=true"
 ```
+
+Supported Reports:
+
+- file count report
+- file size report
+- files by owner (uid and gid)
+- file aging report

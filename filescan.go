@@ -256,6 +256,42 @@ func runFileUidReport(db *sql.DB) error {
 	return nil
 }
 
+// note date1 is the more recent date and date2 is the older one
+func runFileAgingReportByDate(db *sql.DB, date1, date2 string) error {
+	var stmt sqlstring.SQLStringSelect
+	stmt.AddColumn("count(f.fileid) as count", false)
+	stmt.AddColumn("sum(f.filesize)", false)
+	stmt.AddTable("files as f", false)
+	where1 := "f.filemtime < " + date1
+	where2 := "f.filemtime > " + date2
+	whereCombined := where1 + " AND " + where2
+	stmt.AddWhere(whereCombined, false)
+	stmt.AddLimit(10, 0, false)
+	fmt.Printf("file aging query: %s\n", stmt.String())
+
+	rows, err := db.Query(stmt.String())
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+	fmt.Fprintf(w, "\nFile Aging Report (%s - %s)\n", date1, date2)
+	fmt.Fprintf(w, "\n %s\t%s\t", "Count of Files", "Sum of File Sizes")
+	fmt.Fprintf(w, "\n %s\t%s\t", "----", "----")
+	for rows.Next() {
+		var sum, count int
+		err = rows.Scan(&count, &sum)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(w, "\n %d\t%d\t", count, sum)
+	}
+	fmt.Fprintf(w, "\n")
+	w.Flush()
+	return nil
+}
+
 func runFileGidReport(db *sql.DB) error {
 	var stmt sqlstring.SQLStringSelect
 	stmt.AddColumn("f.filegid", false)
@@ -303,6 +339,13 @@ func runReports(db *sql.DB) error {
 		return err
 	}
 	if err := runFileGidReport(db); err != nil {
+		return err
+	}
+	t1 := time.Now()
+	t2 := t1.AddDate(0, 0, -10)
+	date1 := strconv.Itoa(int(t1.Unix()))
+	date2 := strconv.Itoa(int(t2.Unix()))
+	if err := runFileAgingReportByDate(db, date1, date2); err != nil {
 		return err
 	}
 	return nil
