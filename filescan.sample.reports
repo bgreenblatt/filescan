@@ -1,0 +1,68 @@
+
+File Count Report
+
+ Dirname														Count of Files	Sum of File Sizes	
+ ----															----		----			
+ /home/ubuntu/go/pkg/mod/github.com/auxten/postgresql-parser@v1.0.1/pkg/sql/sem/tree/testdata/pretty			368		1,671,111		
+ /home/ubuntu/go/pkg/mod/golang.org/x/sys@v0.1.0/unix									360		6,552,769		
+ /home/ubuntu/go/pkg/mod/golang.org/x/sys@v0.2.0/unix									360		6,555,974		
+ /home/ubuntu/go/pkg/mod/golang.org/x/sys@v0.0.0-20220811171246-fbc7d0a398ab/unix					355		6,111,070		
+ /home/ubuntu/go/pkg/mod/golang.org/x/sys@v0.0.0-20220722155257-8c9f86f7a55f/unix					351		5,979,907		
+ /home/ubuntu/go/pkg/mod/golang.org/x/sys@v0.0.0-20211019181941-9d821ace8654/unix					340		5,610,953		
+ /home/ubuntu/go/pkg/mod/golang.org/x/sys@v0.0.0-20201214210602-f9fddec55a1e/unix					335		5,346,684		
+ /home/ubuntu/go/pkg/mod/google.golang.org/genproto@v0.0.0-20200911024640-645f7a48b24f/googleapis/ads/googleads/v5/enums225		2,908,207		
+ /home/ubuntu/go/pkg/mod/google.golang.org/genproto@v0.0.0-20200911024640-645f7a48b24f/googleapis/ads/googleads/v4/enums222		2,864,465		
+ /home/ubuntu/go/pkg/mod/google.golang.org/genproto@v0.0.0-20200911024640-645f7a48b24f/googleapis/ads/googleads/v3/enums218		2,811,124		
+
+File Size Report
+
+ Dirname											Count of Files	Sum of File Sizes	
+ ----												----		----			
+ /home/ubuntu/go/bin										17		132,774,715		
+ /home/ubuntu/filescan-old									7		8,394,864		
+ /home/ubuntu/go/pkg/mod/github.com/go-delve/delve@v1.9.1/pkg/dwarf/line/_testdata		1		5,102,067		
+ /home/ubuntu/filescan/.git/objects/dd								2		2,767,866		
+ /home/ubuntu/filescan-old/.git/objects/dd							1		2,766,926		
+ /home/ubuntu/go/pkg/mod/github.com/yeya24/promlinter@v0.2.0/assets				1		2,159,819		
+ /home/ubuntu/hello										3		1,948,579		
+ /home/ubuntu/go/pkg/mod/cache/download/github.com/cilium/ebpf/@v				6		1,473,074		
+ /home/ubuntu/go/pkg/mod/github.com/nbutton23/zxcvbn-go@v0.0.0-20210217022336-fa2cb2858354/data	1		1,397,430		
+ /home/ubuntu/go/pkg/mod/github.com/gogo/protobuf@v1.3.2/test/combos/both			6		1,792,465		
+
+Files By User Report
+
+ UID	Count of Files	Sum of File Sizes	
+ ----	----		----			
+ 1000	49,868		884,746,099		
+ 1001	1		4			
+
+Files By Group Report
+
+ GID	Count of Files	Sum of File Sizes	
+ ----	----		----			
+ 1000	49,868		884,746,099		
+ 1001	1		4			
+
+File Aging Report (Wed Jan  4 21:41:30 UTC 2023 - Tue Jan  3 21:41:30 UTC 2023)
+
+ Count of Files	Sum of File Sizes	
+ ----		----			
+ 572		20,210,896		
+
+File Aging Report (Tue Jan  3 21:41:30 UTC 2023 - Tue Dec 27 21:41:30 UTC 2022)
+
+ Count of Files	Sum of File Sizes	
+ ----		----			
+ 105		12,287,374		
+
+File Aging Report (Tue Dec 27 21:41:30 UTC 2022 - Sun Nov 27 21:41:30 UTC 2022)
+
+ Count of Files	Sum of File Sizes	
+ ----		----			
+ 11,036		308,417,820		
+
+File Aging Report (Sun Nov 27 21:41:30 UTC 2022 - Sat Nov 27 21:41:30 UTC 2021)
+
+ Count of Files	Sum of File Sizes	
+ ----		----			
+ 38,172		692,791,833		

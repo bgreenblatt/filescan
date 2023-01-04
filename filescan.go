@@ -14,6 +14,9 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+
 	"github.com/bgreenblatt/sqlstring"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -170,6 +173,7 @@ func runFileCountReport(db *sql.DB) error {
 	fmt.Fprintf(w, "\nFile Count Report\n")
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "Dirname", "Count of Files", "Sum of File Sizes")
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	p := message.NewPrinter(language.English)
 	for rows.Next() {
 		var dirname string
 		var sum, count int
@@ -177,7 +181,9 @@ func runFileCountReport(db *sql.DB) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+		cStr := p.Sprintf("%d", count)
+		sStr := p.Sprintf("%d", sum)
+		fmt.Fprintf(w, "\n %s\t%s\t%s\t", dirname, cStr, sStr)
 	}
 	fmt.Fprintf(w, "\n")
 	w.Flush()
@@ -206,6 +212,7 @@ func runFileSizeReport(db *sql.DB) error {
 	fmt.Fprintf(w, "\nFile Size Report\n")
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "Dirname", "Count of Files", "Sum of File Sizes")
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	p := message.NewPrinter(language.English)
 	for rows.Next() {
 		var dirname string
 		var sum, count int
@@ -213,7 +220,9 @@ func runFileSizeReport(db *sql.DB) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+		cStr := p.Sprintf("%d", count)
+		sStr := p.Sprintf("%d", sum)
+		fmt.Fprintf(w, "\n %s\t%s\t%s\t", dirname, cStr, sStr)
 	}
 	fmt.Fprintf(w, "\n")
 	w.Flush()
@@ -239,9 +248,10 @@ func runFileUidReport(db *sql.DB) error {
 	defer rows.Close()
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
-	fmt.Fprintf(w, "\nFile Count Report\n")
+	fmt.Fprintf(w, "\nFiles By User Report\n")
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "UID", "Count of Files", "Sum of File Sizes")
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	p := message.NewPrinter(language.English)
 	for rows.Next() {
 		var dirname string
 		var sum, count int
@@ -249,7 +259,9 @@ func runFileUidReport(db *sql.DB) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+		cStr := p.Sprintf("%d", count)
+		sStr := p.Sprintf("%d", sum)
+		fmt.Fprintf(w, "\n %s\t%s\t%s\t", dirname, cStr, sStr)
 	}
 	fmt.Fprintf(w, "\n")
 	w.Flush()
@@ -267,7 +279,6 @@ func runFileAgingReportByDate(db *sql.DB, date1, date2 string) error {
 	whereCombined := where1 + " AND " + where2
 	stmt.AddWhere(whereCombined, false)
 	stmt.AddLimit(10, 0, false)
-	fmt.Printf("file aging query: %s\n", stmt.String())
 
 	rows, err := db.Query(stmt.String())
 	if err != nil {
@@ -276,16 +287,25 @@ func runFileAgingReportByDate(db *sql.DB, date1, date2 string) error {
 	defer rows.Close()
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
-	fmt.Fprintf(w, "\nFile Aging Report (%s - %s)\n", date1, date2)
+	d1, _ := strconv.Atoi(date1)
+	t1 := time.Unix(int64(d1), 0)
+	strD1 := t1.Format(time.UnixDate)
+	d2, _ := strconv.Atoi(date2)
+	t2 := time.Unix(int64(d2), 0)
+	strD2 := t2.Format(time.UnixDate)
+	fmt.Fprintf(w, "\nFile Aging Report (%s - %s)\n", strD1, strD2)
 	fmt.Fprintf(w, "\n %s\t%s\t", "Count of Files", "Sum of File Sizes")
 	fmt.Fprintf(w, "\n %s\t%s\t", "----", "----")
+	p := message.NewPrinter(language.English)
 	for rows.Next() {
 		var sum, count int
 		err = rows.Scan(&count, &sum)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(w, "\n %d\t%d\t", count, sum)
+		cStr := p.Sprintf("%d", count)
+		sStr := p.Sprintf("%d", sum)
+		fmt.Fprintf(w, "\n %s\t%s\t", cStr, sStr)
 	}
 	fmt.Fprintf(w, "\n")
 	w.Flush()
@@ -311,9 +331,10 @@ func runFileGidReport(db *sql.DB) error {
 	defer rows.Close()
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
-	fmt.Fprintf(w, "\nFile Count Report\n")
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "UID", "Count of Files", "Sum of File Sizes")
+	fmt.Fprintf(w, "\nFiles By Group Report\n")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "GID", "Count of Files", "Sum of File Sizes")
 	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "----", "----", "----")
+	p := message.NewPrinter(language.English)
 	for rows.Next() {
 		var dirname string
 		var sum, count int
@@ -321,7 +342,9 @@ func runFileGidReport(db *sql.DB) error {
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(w, "\n %s\t%d\t%d\t", dirname, count, sum)
+		cStr := p.Sprintf("%d", count)
+		sStr := p.Sprintf("%d", sum)
+		fmt.Fprintf(w, "\n %s\t%s\t%s\t", dirname, cStr, sStr)
 	}
 	fmt.Fprintf(w, "\n")
 	w.Flush()
@@ -341,12 +364,16 @@ func runReports(db *sql.DB) error {
 	if err := runFileGidReport(db); err != nil {
 		return err
 	}
+	fileAgingReports := []int{-1, -7, -30, -365}
 	t1 := time.Now()
-	t2 := t1.AddDate(0, 0, -10)
-	date1 := strconv.Itoa(int(t1.Unix()))
-	date2 := strconv.Itoa(int(t2.Unix()))
-	if err := runFileAgingReportByDate(db, date1, date2); err != nil {
-		return err
+	for _, endDate := range fileAgingReports {
+		t2 := t1.AddDate(0, 0, endDate)
+		date1 := strconv.Itoa(int(t1.Unix()))
+		date2 := strconv.Itoa(int(t2.Unix()))
+		if err := runFileAgingReportByDate(db, date1, date2); err != nil {
+			return err
+		}
+		t1 = t2
 	}
 	return nil
 }
